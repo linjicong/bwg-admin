@@ -190,40 +190,43 @@ export default function DashboardPage() {
               percent={bandwidthPercent}
               status={bandwidthPercent > 90 ? "exception" : bandwidthPercent > 70 ? "active" : "success"}
               strokeColor={bandwidthPercent > 90 ? "#ff4d4f" : bandwidthPercent > 70 ? "#faad14" : "#52c41a"}
-              format={() => `${formatBytes(usedBandwidth)} / ${formatBytes(totalBandwidth)}`}
+              format={() => `${bandwidthPercent}%  ${formatBytes(usedBandwidth)} / ${formatBytes(totalBandwidth)}`}
             />
-            <div style={{ marginTop: 16, display: "flex", justifyContent: "space-between", color: "#888", fontSize: 13 }}>
-              <span>已使用 {bandwidthPercent}%</span>
-              <span>剩余 {formatBytes(totalBandwidth - usedBandwidth)}</span>
-            </div>
           </Card>
         </Col>
         <Col xs={24} lg={12}>
           <Card title="资源使用">
             <Space direction="vertical" style={{ width: "100%" }} size="middle">
               <div>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                  <span>内存使用</span>
-                  <span style={{ color: "#888" }}>{memUsedPercent !== null ? `${memUsedPercent}%` : "N/A"}</span>
-                </div>
-                <Progress percent={memUsedPercent || 0} size="small" showInfo={false}
-                  strokeColor={(memUsedPercent || 0) > 80 ? "#ff4d4f" : "#1677ff"} />
+                <div style={{ marginBottom: 4, fontWeight: 500 }}>内存</div>
+                <Progress
+                  percent={memUsedPercent || 0}
+                  status={(memUsedPercent || 0) > 90 ? "exception" : (memUsedPercent || 0) > 70 ? "active" : "success"}
+                  strokeColor={(memUsedPercent || 0) > 90 ? "#ff4d4f" : (memUsedPercent || 0) > 70 ? "#faad14" : "#52c41a"}
+                  format={() => live
+                    ? `${memUsedPercent}%  ${formatKB(live.mem_available_kb)} 可用 / ${formatBytes(info.plan_ram)}`
+                    : `${formatBytes(info.plan_ram)}`}
+                />
               </div>
               <div>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                  <span>磁盘使用</span>
-                  <span style={{ color: "#888" }}>
-                    {diskUsedPercent !== null
-                      ? `${formatBytes(live!.ve_used_disk_space_b)} / ${live!.ve_disk_quota_gb} GB (${diskUsedPercent}%)`
-                      : `0 / ${formatBytes(info.plan_disk)}`}
-                  </span>
-                </div>
-                <Progress percent={diskUsedPercent || 0} size="small" showInfo={false}
-                  strokeColor={(diskUsedPercent || 0) > 80 ? "#ff4d4f" : "#1677ff"} />
+                <div style={{ marginBottom: 4, fontWeight: 500 }}>磁盘</div>
+                <Progress
+                  percent={diskUsedPercent || 0}
+                  status={(diskUsedPercent || 0) > 90 ? "exception" : (diskUsedPercent || 0) > 70 ? "active" : "success"}
+                  strokeColor={(diskUsedPercent || 0) > 90 ? "#ff4d4f" : (diskUsedPercent || 0) > 70 ? "#faad14" : "#52c41a"}
+                  format={() => live && live.ve_disk_quota_gb
+                    ? `${diskUsedPercent}%  ${formatBytes(live.ve_used_disk_space_b)} / ${live.ve_disk_quota_gb} GB`
+                    : `${formatBytes(info.plan_disk)}`}
+                />
               </div>
-              {live && (
-                <div style={{ display: "flex", justifyContent: "space-between", color: "#888", fontSize: 13 }}>
-                  <span>Swap: {formatKB(live.swap_available_kb)} 可用 / {formatKB(live.swap_total_kb)} 总计</span>
+              {live && live.swap_total_kb > 0 && (
+                <div>
+                  <div style={{ marginBottom: 4, fontWeight: 500 }}>Swap</div>
+                  <Progress
+                    percent={Math.round((1 - live.swap_available_kb / live.swap_total_kb) * 100)}
+                    strokeColor="#1677ff"
+                    format={() => `${Math.round((1 - live.swap_available_kb / live.swap_total_kb) * 100)}%  ${formatKB(live.swap_available_kb)} 可用 / ${formatKB(live.swap_total_kb)}`}
+                  />
                 </div>
               )}
             </Space>
